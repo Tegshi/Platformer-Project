@@ -12,9 +12,10 @@ Game::~Game() {
 	delete this->player;
 }
 
-//Creates the game window size 800, 600
+//Creates the game window
 void Game::initWindow() {
-	this->window.create(sf::VideoMode(800, 600), "Ghetto", sf::Style::Close | sf::Style::Titlebar);
+	this->window.create(sf::VideoMode(3000, 700), "Ghetto", sf::Style::Close | sf::Style::Titlebar);
+	this->window.setFramerateLimit(144);
 }
 
 //creates a player object
@@ -48,8 +49,8 @@ void Game::update() {
 }
 
 void Game::render() {
-	//clear the window
-	this->window.clear(sf::Color::White);
+	//clear the window, sf::color::____ to set bg color
+	this->window.clear();
 
 	//Rendering
 	this->renderPlayer();
