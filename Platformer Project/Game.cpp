@@ -14,7 +14,7 @@ Game::~Game() {
 
 //Creates the game window
 void Game::initWindow() {
-	this->window.create(sf::VideoMode(3000, 700), "Ghetto", sf::Style::Close | sf::Style::Titlebar);
+	this->window.create(sf::VideoMode(2000, 1200), "Broken", sf::Style::Close | sf::Style::Titlebar);
 	this->window.setFramerateLimit(144);
 }
 
@@ -33,6 +33,18 @@ void Game::updatePlayer() {
 	this->player->update();
 }
 
+void Game::updateCollision() {
+	//Collision bottom of screen
+	if (this->player->getPosition().y + this->player->getGlobalBounds().height > 
+		this->window.getSize().y) {
+
+		this->player->resetVelocityY();
+		this->player->setPosition(
+			this->player->getPosition().x, this->window.getSize().y - 
+			this->player->getGlobalBounds().height);
+	}
+}
+
 void Game::update() {
 	//Polling window events
 	while (this->window.pollEvent(this->ev)) {
@@ -42,14 +54,26 @@ void Game::update() {
 		//if a key is pressed and it's the Esc key, the window closes
 		else if (this->ev.type == sf::Event::KeyPressed && this->ev.key.code == sf::Keyboard::Escape)
 			this->window.close();
+
+
+		//fixes animation timer
+		if (this->ev.type == sf::Event::KeyReleased && 
+			(this->ev.key.code == sf::Keyboard::Left ||
+				this->ev.key.code == sf::Keyboard::Up || 
+				this->ev.key.code == sf::Keyboard::Right || 
+				this->ev.key.code == sf::Keyboard::Down)) {
+			this->player->resetAnimationTimer();
+		}
 	}
 
 	//updates player
 	this->updatePlayer();
+
+	this->updateCollision();
 }
 
 void Game::render() {
-	//clear the window, sf::color::____ to set bg color
+	//clear the window, sf::Color::____ to set bg color
 	this->window.clear();
 
 	//Rendering
