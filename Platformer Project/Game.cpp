@@ -3,86 +3,86 @@
 
 //Constructor
 Game::Game() {
-	this->initWindow();
-	this->initPlayer();
+	initWindow();
+	initPlayer();
 }
 
 //destructor
 Game::~Game() {
-	delete this->player;
+	delete player;
 }
 
 //Creates the game window
 void Game::initWindow() {
-	this->window.create(sf::VideoMode(2000, 1200), "Broken", sf::Style::Close | sf::Style::Titlebar);
-	this->window.setFramerateLimit(144);
+	window.create(sf::VideoMode(2000, 1200), "Broken", sf::Style::Close | sf::Style::Titlebar);
+	window.setFramerateLimit(144);
 }
 
 //creates a player object
 void Game::initPlayer() {
-	this->player = new Player();
+	player = new Player();
 }
 
 //returns the current window
 const sf::RenderWindow& Game::getWindow() const {
-	return this->window;
+	return window;
 }
 
 //updates the player with a player object
 void Game::updatePlayer() {
-	this->player->update();
+	player->update();
 }
 
 void Game::updateCollision() {
 	//Collision bottom of screen
-	if (this->player->getPosition().y + this->player->getGlobalBounds().height > 
-		this->window.getSize().y) {
+	if (player->getPosition().y + player->getGlobalBounds().height > 
+		window.getSize().y) {
 
-		this->player->resetVelocityY();
-		this->player->setPosition(
-			this->player->getPosition().x, this->window.getSize().y - 
-			this->player->getGlobalBounds().height);
+		player->resetVelocityY();
+		player->setPosition(
+			player->getPosition().x, window.getSize().y - 
+			player->getGlobalBounds().height);
 	}
 }
 
 void Game::update() {
 	//Polling window events
-	while (this->window.pollEvent(this->ev)) {
+	while (window.pollEvent(ev)) {
 		//if the close button is pressed, the window closes
-		if (this->ev.type == sf::Event::Closed)
-			this->window.close();
+		if (ev.type == sf::Event::Closed)
+			window.close();
 		//if a key is pressed and it's the Esc key, the window closes
-		else if (this->ev.type == sf::Event::KeyPressed && this->ev.key.code == sf::Keyboard::Escape)
-			this->window.close();
+		else if (ev.type == sf::Event::KeyPressed && ev.key.code == sf::Keyboard::Escape)
+			window.close();
 
 
 		//fixes animation timer
-		if (this->ev.type == sf::Event::KeyReleased && 
-			(this->ev.key.code == sf::Keyboard::Left ||
-				this->ev.key.code == sf::Keyboard::Up || 
-				this->ev.key.code == sf::Keyboard::Right || 
-				this->ev.key.code == sf::Keyboard::Down)) {
-			this->player->resetAnimationTimer();
+		if (ev.type == sf::Event::KeyReleased && 
+			(ev.key.code == sf::Keyboard::Left ||
+				ev.key.code == sf::Keyboard::Up || 
+				ev.key.code == sf::Keyboard::Right || 
+				ev.key.code == sf::Keyboard::Down)) {
+			player->resetAnimationTimer();
 		}
 	}
 
 	//updates player
-	this->updatePlayer();
+	updatePlayer();
 
-	this->updateCollision();
+	updateCollision();
 }
 
 void Game::render() {
 	//clear the window, sf::Color::____ to set bg color
-	this->window.clear();
+	window.clear();
 
 	//Rendering
-	this->renderPlayer();
+	renderPlayer();
 
 	//draw the new window
-	this->window.display();
+	window.display();
 }
 
 void Game::renderPlayer() {
-	this->player->render(this->window);
+	player->render(window);
 }
