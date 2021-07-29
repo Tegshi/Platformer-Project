@@ -12,6 +12,7 @@ public:
     const bool& getAnimSwitch();
     const sf::Vector2f getPosition() const;
     const sf::FloatRect getGlobalBounds() const;
+    bool& getJump();
 
     //Modifiers
     void setPosition(const float x, const float y);
@@ -35,6 +36,7 @@ protected:
     sf::Clock animationTimer;
     int animState;
     bool animSwitch;
+    int spriteScale; //set scale of sprites
 
     //Physics
     sf::Vector2f velocity;
@@ -44,6 +46,9 @@ protected:
     float drag;
     float gravity;
     float maxGravity;
+
+    float jumpHeight;
+    bool canJump;
 
     //initialization
     void initVariables();

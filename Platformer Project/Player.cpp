@@ -37,7 +37,9 @@ void Player::resetVelocityY() {
 }
 
 void Player::initVariables() {
+    spriteScale = 4;
     animState = IDLE;
+    canJump = true;
 }
 
 void Player::initTexture() {
@@ -47,10 +49,9 @@ void Player::initTexture() {
 
 void Player::initSprite() {
     sprite.setTexture(textureSheet);
-    //currentFrame = sf::IntRect(0, 0, 34, 35);
     currentFrame = sf::IntRect(0, 0, 32, 30);
     sprite.setTextureRect(currentFrame);
-    sprite.setScale(10, 10);
+    sprite.setScale(spriteScale, spriteScale);
 }
 
 void Player::initAnimation() {
@@ -59,12 +60,13 @@ void Player::initAnimation() {
 }
 
 void Player::initPhysics() {
-    maxVelocity = 10;
+    maxVelocity = 7;
     minVelocity = 1;
-    acceleration = 3;
+    acceleration = 2;
     drag = 0.98;
-    gravity = 0.8;
-    maxGravity = 4;
+    gravity = 0.6;
+    maxGravity = 30;
+    jumpHeight = 4;
 }
 
 void Player::update() {
@@ -76,21 +78,26 @@ void Player::update() {
 void Player::updatePlayer() {
     animState = IDLE;
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left)) {
-        move(-5, 0);
         animState = MOVING_LEFT;
+        move(-5, 0);
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right)) {
-        move(5, 0);
         animState = MOVING_RIGHT;
+        move(5, 0);
     }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up)) {
-        move(0, -5);
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up) && canJump) {
         animState = JUMPING;
+        move(0, -5);
+        canJump = false;
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down)) {
-        move(0, 5);
         animState = FALLING;
+        move(0, 5);
     }
+}
+
+bool& Player::getJump() {
+    return canJump;
 }
  
 void Player::updateAnimation() {
@@ -114,7 +121,7 @@ void Player::updateAnimation() {
             sprite.setTextureRect(currentFrame);
         }
         
-        sprite.setScale(10, 10);
+        sprite.setScale(spriteScale, spriteScale);
         sprite.setOrigin(0, 0);
     }
     else if (animState == MOVING_LEFT) {
@@ -127,8 +134,8 @@ void Player::updateAnimation() {
             sprite.setTextureRect(currentFrame);
         }
            
-        sprite.setScale(-10, 10);
-        sprite.setOrigin(sprite.getGlobalBounds().width/10, 0);
+        sprite.setScale(-spriteScale, spriteScale);
+        sprite.setOrigin(sprite.getGlobalBounds().width/spriteScale, 0);
     }
     else 
         animationTimer.restart();
@@ -140,8 +147,6 @@ void Player::resetAnimationTimer() {
 }
 
 void Player::updatePhysics() {
-    //Gravity
-    velocity.y += 2 * gravity;
 
     if (std::abs(velocity.x) > maxGravity) {
         //conditional operator: if velocity x is < 0, then it is multiplied by -1
@@ -152,21 +157,26 @@ void Player::updatePhysics() {
     //Drag, lowers velocity value by 0.98 over time
     velocity *= drag;
 
-    //Limit drag, basically once you reach a certain
-    //minimum velocity, you stop moving
+    //if not moving at least minVelocity, sprite won't move
+    //also simulates gravity
     if (std::abs(velocity.x) < minVelocity)
         velocity.x = 0;
-    if (std::abs(velocity.y) < minVelocity)
+    else if (std::abs(velocity.y) < minVelocity)
         velocity.y = 0;
+
+    //Gravity
+    velocity.y += 2 * gravity;
 
     sprite.move(velocity);
 }
 
 void Player::move(const float dir_x, const float dir_y) {
-    //Acceleration
+    //Acceleration, left and right
     velocity.x += dir_x * acceleration;
-    //velocity.y += dir_y * acceleration; //not really used, we use gravity
-    velocity.y = dir_y * acceleration;
+
+    //Jumping
+    if (animState == JUMPING)
+        velocity.y = -sqrt(abs(dir_y) * (gravity*60) * jumpHeight);
 
     //Limit velocity/acceleration
     if (std::abs(velocity.x) > maxVelocity) {
@@ -179,9 +189,11 @@ void Player::move(const float dir_x, const float dir_y) {
 void Player::render(sf::RenderTarget& target) {
     target.draw(sprite);
 
+    /* top left coordinate of player sprite
     sf::CircleShape circle;
     circle.setFillColor(sf::Color::Blue);
-    circle.setRadius(4);
+    circle.setRadius(spriteScale);
     circle.setPosition(sprite.getPosition());
     target.draw(circle);
+    */
 }
