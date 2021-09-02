@@ -2,187 +2,198 @@
 #include "Player.h"
 
 Player::Player() {
-    this->initVariables();
-    this->initTexture();
-    this->initSprite();
-    this->initAnimation();
-    this->initPhysics();
+    initVariables();
+    initTexture();
+    initSprite();
+    initAnimation();
+    initPhysics();
 }
 
 Player::~Player() {
 }
 
 const bool& Player::getAnimSwitch() {
-    bool anim_switch = this->animSwitch;
+    bool anim_switch = animSwitch;
 
-    if (this->animSwitch)
-        this->animSwitch = false;
+    if (animSwitch)
+        animSwitch = false;
     return anim_switch;
 }
 
 const sf::FloatRect Player::getGlobalBounds() const {
-    return this->sprite.getGlobalBounds();
+    return sprite.getGlobalBounds();
 }
 
 const sf::Vector2f Player::getPosition() const {
-    return this->sprite.getPosition();
+    return sprite.getPosition();
 }
 
 void Player::setPosition(const float x, const float y) {
-    this->sprite.setPosition(x, y);
+    sprite.setPosition(x, y);
 }
 
 void Player::resetVelocityY() {
-    this->velocity.y = 0;
+    velocity.y = 0;
 }
 
 void Player::initVariables() {
-    this->animState = IDLE;
+    spriteScale = 4;
+    animState = IDLE;
+    canJump = true;
 }
 
 void Player::initTexture() {
-    if (!this->textureSheet.loadFromFile("Textures/kirby_downsize.png"))
+    if (!textureSheet.loadFromFile("Textures/kirby_downsize.png"))
         std::cout << "ERROR::PLAYER::Couldn't load player texture!" << std::endl;
 }
 
 void Player::initSprite() {
-    this->sprite.setTexture(this->textureSheet);
-    //this->currentFrame = sf::IntRect(0, 0, 34, 35);
-    this->currentFrame = sf::IntRect(0, 0, 32, 30);
-    this->sprite.setTextureRect(this->currentFrame);
-    this->sprite.setScale(10, 10);
+    sprite.setTexture(textureSheet);
+    currentFrame = sf::IntRect(0, 0, 32, 30);
+    sprite.setTextureRect(currentFrame);
+    sprite.setScale(spriteScale, spriteScale);
 }
 
 void Player::initAnimation() {
-    this->animationTimer.restart();
-    this->animSwitch = true;
+    animationTimer.restart();
+    animSwitch = true;
 }
 
 void Player::initPhysics() {
-    this->maxVelocity = 10;
-    this->minVelocity = 1;
-    this->acceleration = 3;
-    this->drag = 0.93;
-    this->gravity = 5;
-    this->maxGravity = 4;
+    maxVelocity = 7;
+    minVelocity = 1;
+    acceleration = 2;
+    drag = 0.98;
+    gravity = 0.6;
+    maxGravity = 30;
+    jumpHeight = 4;
 }
 
 void Player::update() {
-    this->updatePlayer();
-    this->updateAnimation();
-    this->updatePhysics();
+    updatePlayer();
+    updateAnimation();
+    updatePhysics();
 }
 
 void Player::updatePlayer() {
     animState = IDLE;
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left)) {
-        this->move(-5, 0);
         animState = MOVING_LEFT;
+        move(-5, 0);
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right)) {
-        this->move(5, 0);
         animState = MOVING_RIGHT;
+        move(5, 0);
     }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up)) {
-        this->move(0, -5);
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up) && canJump) {
         animState = JUMPING;
+        move(0, -5);
+        canJump = false;
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down)) {
-        this->move(0, 5);
         animState = FALLING;
+        move(0, 5);
     }
+}
+
+bool& Player::getJump() {
+    return canJump;
 }
  
 void Player::updateAnimation() {
-    if (this->animState == IDLE) {  
-        if (this->animationTimer.getElapsedTime().asSeconds() >= 0.2f || this->getAnimSwitch()) {
-            this->currentFrame.top = 0;
-            this->currentFrame.left += 30;
-            if (this->currentFrame.left >= 87)
-                this->currentFrame.left = 0;
-            this->animationTimer.restart();
-            this->sprite.setTextureRect(this->currentFrame);
+    if (animState == IDLE) {  
+        if (animationTimer.getElapsedTime().asSeconds() >= 0.2f || getAnimSwitch()) {
+            currentFrame.top = 0;
+            currentFrame.left += 30;
+            if (currentFrame.left >= 87)
+                currentFrame.left = 0;
+            animationTimer.restart();
+            sprite.setTextureRect(currentFrame);
         }
     }
-    else if (this->animState == MOVING_RIGHT) {
-        if (this->animationTimer.getElapsedTime().asSeconds() >= 0.1f || this->getAnimSwitch()) {
-            this->currentFrame.top = 90;
-            this->currentFrame.left += 31;
-            if (this->currentFrame.left >= 240)
-                this->currentFrame.left = 0;
-            this->animationTimer.restart();
-            this->sprite.setTextureRect(this->currentFrame);
+    else if (animState == MOVING_RIGHT) {
+        if (animationTimer.getElapsedTime().asSeconds() >= 0.1f || getAnimSwitch()) {
+            currentFrame.top = 90;
+            currentFrame.left += 31;
+            if (currentFrame.left >= 240)
+                currentFrame.left = 0;
+            animationTimer.restart();
+            sprite.setTextureRect(currentFrame);
         }
         
-        this->sprite.setScale(10, 10);
-        this->sprite.setOrigin(0, 0);
+        sprite.setScale(spriteScale, spriteScale);
+        sprite.setOrigin(0, 0);
     }
-    else if (this->animState == MOVING_LEFT) {
-        if (this->animationTimer.getElapsedTime().asSeconds() >= 0.1f || this->getAnimSwitch()) {
-            this->currentFrame.top = 90;
-            this->currentFrame.left += 31;
-            if (this->currentFrame.left >= 240)
-                this->currentFrame.left = 0;
-            this->animationTimer.restart();
-            this->sprite.setTextureRect(this->currentFrame);
+    else if (animState == MOVING_LEFT) {
+        if (animationTimer.getElapsedTime().asSeconds() >= 0.1f || getAnimSwitch()) {
+            currentFrame.top = 90;
+            currentFrame.left += 31;
+            if (currentFrame.left >= 240)
+                currentFrame.left = 0;
+            animationTimer.restart();
+            sprite.setTextureRect(currentFrame);
         }
            
-        this->sprite.setScale(-10, 10);
-        this->sprite.setOrigin(this->sprite.getGlobalBounds().width/10, 0);
+        sprite.setScale(-spriteScale, spriteScale);
+        sprite.setOrigin(sprite.getGlobalBounds().width/spriteScale, 0);
     }
     else 
-        this->animationTimer.restart();
+        animationTimer.restart();
 }
 
 void Player::resetAnimationTimer() {
-    this->animationTimer.restart();
-    this->animSwitch = true;
+    animationTimer.restart();
+    animSwitch = true;
 }
 
 void Player::updatePhysics() {
-    //Gravity
-    this->velocity.y += 2 * this->gravity;
 
-    if (std::abs(this->velocity.x) > this->maxGravity) {
+    if (std::abs(velocity.x) > maxGravity) {
         //conditional operator: if velocity x is < 0, then it is multiplied by -1
         //in order to keep the velocity in the proper direction
-        this->velocity.y = this->maxGravity * ((this->velocity.y < 0) ? -1 : 1);
+        velocity.y = maxGravity * ((velocity.y < 0) ? -1 : 1);
     }
 
-
     //Drag, lowers velocity value by 0.98 over time
-    this->velocity *= this->drag;
+    velocity *= drag;
 
-    //Limit drag, basically once you reach a certain
-    //minimum velocity, you stop moving
-    if (std::abs(this->velocity.x) < this->minVelocity)
-        this->velocity.x = 0;
-    if (std::abs(this->velocity.y) < this->minVelocity)
-        this->velocity.y = 0;
+    //if not moving at least minVelocity, sprite won't move
+    //also simulates gravity
+    if (std::abs(velocity.x) < minVelocity)
+        velocity.x = 0;
+    else if (std::abs(velocity.y) < minVelocity)
+        velocity.y = 0;
 
-    this->sprite.move(this->velocity);
+    //Gravity
+    velocity.y += 2 * gravity;
+
+    sprite.move(velocity);
 }
 
 void Player::move(const float dir_x, const float dir_y) {
-    //Acceleration
-    this->velocity.x += dir_x * this->acceleration;
-    //this->velocity.y += dir_y * this->acceleration; //not really used, we use gravity
-    this->velocity.y = dir_y * this->acceleration;
+    //Acceleration, left and right
+    velocity.x += dir_x * acceleration;
+
+    //Jumping
+    if (animState == JUMPING)
+        velocity.y = -sqrt(abs(dir_y) * (gravity*60) * jumpHeight);
 
     //Limit velocity/acceleration
-    if (std::abs(this->velocity.x) > this->maxVelocity) {
+    if (std::abs(velocity.x) > maxVelocity) {
         //conditional operator: if velocity x is < 0, then it is multiplied by -1
         //in order to keep the velocity in the proper direction
-        this->velocity.x = this->maxVelocity * ((this->velocity.x < 0) ? -1 : 1);
+        velocity.x = maxVelocity * ((velocity.x < 0) ? -1 : 1);
     }
 }
 
 void Player::render(sf::RenderTarget& target) {
-    target.draw(this->sprite);
+    target.draw(sprite);
 
+    /* top left coordinate of player sprite
     sf::CircleShape circle;
     circle.setFillColor(sf::Color::Blue);
-    circle.setRadius(4);
-    circle.setPosition(this->sprite.getPosition());
+    circle.setRadius(spriteScale);
+    circle.setPosition(sprite.getPosition());
     target.draw(circle);
+    */
 }

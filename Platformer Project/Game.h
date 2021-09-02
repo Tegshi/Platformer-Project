@@ -16,6 +16,8 @@ public:
 protected:
 	sf::RenderWindow window;
 	sf::Event ev;
+	sf::Sprite bgSprite;
+	sf::Texture background;
 
 	//player object
 	Player* player;
@@ -23,5 +25,7 @@ protected:
 	//initialization
 	void initWindow();
 	void initPlayer();
+	void initBackground();
+	void initbgSprite();
 };
 
